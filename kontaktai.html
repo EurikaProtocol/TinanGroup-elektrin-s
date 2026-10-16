@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kontaktai ir pasiūlymo skaičiuoklė | TINAN GROUP</title>
+<meta name="description" content="Susisiekite su TINAN GROUP: info@tinangroup.com, +37069685605. Orientacinė saulės elektrinės kainos skaičiuoklė.">
+<link rel="canonical" href="https://tinangroup.com/kontaktai">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="Kontaktai ir pasiūlymo skaičiuoklė | TINAN GROUP">
+<meta property="og:description" content="Susisiekite su TINAN GROUP: info@tinangroup.com, +37069685605. Orientacinė saulės elektrinės kainos skaičiuoklė.">
+<meta property="og:locale" content="lt_LT">
+<meta property="og:type" content="website">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"TINAN GROUP","url":"https://tinangroup.com","email":"info@tinangroup.com","telephone":"+37069685605"}</script>
+</head>
+<body>
+<a class="skip" href="#main">Pereiti prie turinio</a>
+<header id="site-header"></header>
+<main id="main" class="container section">
+<h1>Kontaktai</h1>
+<p><strong>TINAN GROUP</strong><br>El. paštas: <a href="mailto:info@tinangroup.com">info@tinangroup.com</a><br>Tel.: <a href="tel:+37069685605">+370 696 85605</a></p>
+<div class="contact-box"><strong>TINAN GROUP</strong> · El. paštas: <a href="mailto:info@tinangroup.com">info@tinangroup.com</a> · Tel.: <a href="tel:+37069685605">+37069685605</a></div>
+<h2 id="pasiulymas">Pasiūlymo skaičiuoklė ir užklausa</h2>
+<p id="price-notice" class="notice warn"></p>
+<div class="two-col">
+<form id="quote-form" class="card form" novalidate>
+  <fieldset class="card"><legend>Pasirinkti produktai ir kiekiai</legend>
+    <ul id="quote-list" class="quote-list" aria-live="polite"></ul>
+    <p class="muted">Produktus galite pridėti puslapiuose <a href="inverteriai.html">Inverteriai</a>, <a href="kaupikliai.html">Kaupikliai</a> ir pagrindiniame puslapyje (paketai).</p>
+    <span class="err" data-error="items"></span>
+  </fieldset>
+  <label>Metinis elektros suvartojimas (kWh)<input name="consumption" type="number" min="1"><span class="err" data-error="consumption"></span></label>
+  <label>Norima saulės elektrinės galia (kW)<input name="kw" type="number" min="1" step="0.5"><span class="err" data-error="kw"></span></label>
+  <label>Kaupiklis<select name="battery"><option value="ne">Nereikia</option><option value="taip">Reikia</option></select></label>
+  <label data-battery-size hidden>Kaupiklio talpa (kWh)<input name="batteryKwh" type="number" min="0" step="0.5" value="10"></label>
+  <label>Objekto tipas<select name="propertyType"><option value="namas">Namas</option><option value="butas">Butas / sodyba</option><option value="verslas">Verslas</option></select></label>
+  <label>Įrengimo vieta (miestas / rajonas)<input name="location" type="text" autocomplete="address-level2"></label>
+    <label>Vardas<input name="name" type="text" autocomplete="name" required><span class="err" data-error="name"></span></label>
+  <label>El. paštas<input name="email" type="email" autocomplete="email" required><span class="err" data-error="email"></span></label>
+  <label>Telefonas<input name="phone" type="tel" autocomplete="tel" required><span class="err" data-error="phone"></span></label>
+  <label>Žinutė<textarea name="message" rows="3"></textarea></label>
+  <label class="check"><input name="consent" type="checkbox"> Sutinku, kad mano duomenys būtų naudojami atsakant į užklausą.</label><span class="err" data-error="consent"></span>
+  <button class="btn btn-primary" type="submit">Paruošti užklausos laišką</button>
+  <p class="muted">Paspaudus mygtuką užklausa <strong>nėra siunčiama automatiškai</strong> – bus paruoštas laiškas, kurį turėsite išsiųsti patys el. paštu info@tinangroup.com.</p>
+  <div data-result aria-live="polite"></div>
+</form>
+<aside class="card"><h3>Orientacinis įvertis</h3><div id="estimate" aria-live="polite"></div></aside>
+</div>
+</main>
+<footer id="site-footer"></footer>
+<script type="module" src="/src/contact.js"></script>
+</body></html>
