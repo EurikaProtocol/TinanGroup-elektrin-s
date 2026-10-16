@@ -1,88 +1,94 @@
-import { describe, it, expect } from 'vitest';
-import { sellingPrice, withVat, priceInfo, estimate, recommendKw } from '../src/lib/pricing.js';
+import { describe, expect, it } from 'vitest';
+import { formatEUR, priceInfo, isVerificationDate } from '../src/lib/pricing.js';
 import { validateQuote, buildSummary, mailtoLink } from '../src/lib/validate.js';
 import { matches } from '../src/lib/filters.js';
-import { INVERTERS, BATTERIES, PACKAGES, findItem } from '../src/data/products.js';
+import { CATALOGUE, CATEGORIES, findItem } from '../src/data/products.js';
 import { readFileSync, existsSync } from 'node:fs';
-import { ESTIMATOR_PRICES } from '../src/config.js';
+import { addToCart, getCart, cartCount, setQty, removeFromCart, clearCart } from '../src/lib/cart.js';
 
-describe('pricing', () => {
-  it('applies markup and VAT', () => {
-    expect(sellingPrice(1000, 0.2)).toBe(1200);
-    expect(withVat(1000)).toBe(1210);
+describe('customer catalogue prices', () => {
+  it('uses exact approved selling prices and requires a verification date', () => {
+    const product = { priceInclVat: 1234.56, priceExVat: 1020.3, priceVerifiedOn: '2026-10-01' };
+    expect(priceInfo(product)).toMatchObject({
+      quoteOnly: false,
+      sellingVat: 1234.56,
+      sellingExVat: 1020.3,
+      verifiedOn: '2026-10-01',
+    });
+    expect(priceInfo({ ...product, priceVerifiedOn: null }).quoteOnly).toBe(true);
+    expect(priceInfo({ ...product, priceInclVat: -1 }).quoteOnly).toBe(true);
+    expect(isVerificationDate('2026-02-30')).toBe(false);
   });
-  it('quote-only has no price', () => {
-    expect(priceInfo({ quoteOnly: true, supplierPrice: 5 }).sellingVat).toBeNull();
-    expect(priceInfo({ supplierPrice: null }).quoteOnly).toBe(true);
+
+  it('shows quote-only text when a price is absent and preserves cents', () => {
+    expect(formatEUR(null)).toBe('Kaina pagal užklausą');
+    expect(formatEUR(1234.56)).toContain('1 234,56');
   });
-  it('estimates and recommends', () => {
-    expect(estimate({ kw: 0 }, ESTIMATOR_PRICES).incVat).toBe(0);
-    expect(estimate({ kw: 10 }, ESTIMATOR_PRICES).incVat).toBeGreaterThan(0);
-    expect(estimate({ kw: 10, batteryKwh: 10 }, ESTIMATOR_PRICES).incVat).toBeGreaterThan(estimate({ kw: 10 }, ESTIMATOR_PRICES).incVat);
-    expect(recommendKw(9500, ESTIMATOR_PRICES)).toBe(10);
+
+  it('contains only customer-facing product records', () => {
+    expect(Array.isArray(CATALOGUE)).toBe(true);
+    expect(CATALOGUE.every((item) => !Object.keys(item).some((key) => /supplier|cost|profit|margin|pelno/i.test(key)))).toBe(true);
+    expect(CATEGORIES.map((category) => category.id)).toContain('inverters');
+    expect(findItem('missing')).toBeNull();
   });
 });
 
-describe('validation', () => {
-  it('rejects bad input', () => {
-    const e = validateQuote({ name: '', email: 'x', phone: '1', consent: false });
-    expect(Object.keys(e)).toEqual(['name', 'email', 'phone', 'consent']);
-  });
-  it('accepts good input and builds mailto', () => {
-    const d = { name: 'Jonas', email: 'a@b.lt', phone: '+37060000000', consent: true, kw: '10' };
-    expect(validateQuote(d)).toEqual({});
-    expect(mailtoLink(buildSummary(d))).toContain('mailto:info@tinangroup.com');
+describe('catalogue filters', () => {
+  const product = {
+    id: 'example', name: 'Inverteris X', manufacturer: 'Gamintojas', model: 'X-10',
+    category: 'inverters', type: 'hybrid', powerKw: 10,
+    priceInclVat: 1452, priceVerifiedOn: '2026-10-01',
+  };
+
+  it('filters by text, category, manufacturer, inverter type, power and price', () => {
+    expect(matches(product, { search: 'x-10', category: 'inverters', manufacturer: 'Gamintojas' })).toBe(true);
+    expect(matches(product, { type: 'hybrid', power: '10', maxPrice: '1500' })).toBe(true);
+    expect(matches(product, { maxPrice: '1000' })).toBe(false);
+    expect(matches({ ...product, priceVerifiedOn: null }, { maxPrice: '2000' })).toBe(false);
   });
 });
 
-describe('inverter filters', () => {
-  it('filters by manufacturer, phase and battery voltage', () => {
-    const r = INVERTERS.filter((i) => matches(i, { manufacturer: 'Deye', phase: '3', voltage: 'LV' }));
-    expect(r.map((i) => i.model)).toEqual(['SUN-10K-SG04LP3-EU']);
+describe('quote validation and email fallback', () => {
+  const data = { name: 'Jonas', email: 'a@b.lt', phone: '+37060000000', consent: true };
+
+  it('rejects invalid contact data', () => {
+    expect(Object.keys(validateQuote({ name: '', email: 'x', phone: '1', consent: false })))
+      .toEqual(['name', 'email', 'phone', 'consent']);
   });
-  it('price filter excludes items without verified price', () => {
-    expect(INVERTERS.filter((i) => matches(i, { maxPrice: '100000' }))).toEqual([]);
-    const it = { ...INVERTERS[0], supplierPrice: 1000, priceVerifiedOn: '2026-01-01' };
-    expect(matches(it, { maxPrice: '2000' })).toBe(true);
-    expect(matches(it, { maxPrice: '1000' })).toBe(false);
-  });
-  it('segments commercial inverters', () => {
-    expect(INVERTERS.filter((i) => matches(i, { segment: 'commercial' })).every((i) => i.ratedKw >= 30)).toBe(true);
-  });
-  it('covers all required brands', () => {
-    const m = new Set(INVERTERS.map((i) => i.manufacturer));
-    for (const b of ['Solis','FoxESS','GoodWe','Huawei','Sungrow','Deye','Solplanet','Fronius','SMA','SAJ','SolarEdge']) expect(m.has(b)).toBe(true);
+
+  it('accepts a quote request and prepares a truthful email link', () => {
+    expect(validateQuote({ ...data, items: [] })).toHaveProperty('items');
+    expect(validateQuote({ ...data, items: [], message: 'Noriu individualaus pasiūlymo' })).not.toHaveProperty('items');
+    const summary = buildSummary({ ...data, items: [{ name: 'Modulis', qty: 2, priceInclVat: 100 }] });
+    expect(summary).toContain('Modulis × 2 (100 € / vnt. su PVM)');
+    expect(mailtoLink(summary)).toContain('mailto:info@tinangroup.com');
   });
 });
 
-describe('price verification', () => {
-  it('requires verification date', () => {
-    expect(priceInfo({ supplierPrice: 100, markup: 0.2 }).quoteOnly).toBe(true);
-    const p = priceInfo({ supplierPrice: 100, markup: 0.2, priceVerifiedOn: '2026-01-01' });
-    expect(p.quoteOnly).toBe(false);
-    expect(p.sellingVat).toBe(145.2);
-    expect(p.verifiedOn).toBe('2026-01-01');
-  });
-  it('no unverified price is shown in data', () => {
-    for (const x of [...INVERTERS, ...BATTERIES, ...PACKAGES]) if (!x.priceVerifiedOn) expect(priceInfo(x).sellingVat).toBeNull();
-  });
-  it('finds quote-list items', () => {
-    expect(findItem('start-5').name).toContain('5 kW START');
-  });
-});
-
-describe('quote items', () => {
-  it('requires items or message', () => {
-    const base = { name: 'Jonas', email: 'a@b.lt', phone: '+37060000000', consent: true };
-    expect(validateQuote({ ...base, items: [] }).items).toBeTruthy();
-    expect(validateQuote({ ...base, items: [], message: 'Noriu pasiūlymo dėl 10 kW' }).items).toBeUndefined();
-    expect(buildSummary({ ...base, items: [{ name: 'X', qty: 2 }] })).toContain('X × 2');
+describe('quote list', () => {
+  it('adds products, updates quantities and removes items', () => {
+    const storage = new Map();
+    globalThis.localStorage = {
+      getItem: (key) => storage.get(key) ?? null,
+      setItem: (key, value) => storage.set(key, value),
+    };
+    globalThis.window = { dispatchEvent: () => true };
+    clearCart();
+    addToCart('module-1', 'Modulis');
+    addToCart('module-1', 'Modulis');
+    expect(cartCount()).toBe(2);
+    setQty('module-1', 3);
+    expect(getCart()[0].qty).toBe(3);
+    removeFromCart('module-1');
+    expect(getCart()).toEqual([]);
+    delete globalThis.localStorage;
+    delete globalThis.window;
   });
 });
 
 describe('build output', () => {
   it.skipIf(!existsSync('dist/404.html'))('404 uses root-absolute paths', () => {
-    const h = readFileSync('dist/404.html', 'utf8');
-    expect(h).not.toMatch(/(src|href)="\.\//);
+    const html = readFileSync('dist/404.html', 'utf8');
+    expect(html).not.toMatch(/(src|href)="\.\//);
   });
 });

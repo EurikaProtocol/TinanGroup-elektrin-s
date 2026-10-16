@@ -1,18 +1,46 @@
-// Lightweight consistency checks for product data and contact details.
-import { readFileSync } from 'node:fs';
-import { INVERTERS, PACKAGES } from '../src/data/products.js';
-let bad = 0;
-const fail = (m) => { console.error('LINT:', m); bad++; };
+import { readFileSync, existsSync } from 'node:fs';
+import { CATALOGUE, CATEGORIES } from '../src/data/products.js';
+import { isVerificationDate } from '../src/lib/pricing.js';
+
+let errors = 0;
+const fail = (message) => { console.error(`LINT: ${message}`); errors += 1; };
 const ids = new Set();
-for (const i of INVERTERS) {
-  if (ids.has(i.id)) fail(`duplicate inverter id ${i.id}`);
-  ids.add(i.id);
-  if (i.battery !== true && i.batteryVoltage) fail(`${i.model}: batteryVoltage without battery`);
-  if (i.supplierPrice != null && !i.priceVerifiedOn) fail(`${i.model}: price without priceVerifiedOn`);
+const forbiddenFields = /supplier|purchase|cost|profit|margin|pelno|savikain/i;
+for (const [index, item] of CATALOGUE.entries()) {
+  if (!item.id || ids.has(item.id)) fail(`product ${index}: missing or duplicate id`);
+  ids.add(item.id);
+  if (!item.name || !item.category) fail(`product ${item.id}: name and category are required`);
+  if (!CATEGORIES.some((category) => category.id === item.category)) fail(`product ${item.id}: unknown category`);
+  for (const field of Object.keys(item)) {
+    if (forbiddenFields.test(field)) fail(`product ${item.id}: internal field "${field}" is not allowed`);
+  }
+  if (item.priceInclVat != null && (!Number.isFinite(item.priceInclVat) || item.priceInclVat < 0 || !isVerificationDate(item.priceVerifiedOn))) {
+    fail(`product ${item.id}: customer price must be non-negative and include a verification date`);
+  }
+  if (item.priceExVat != null && (!Number.isFinite(item.priceExVat) || item.priceExVat < 0 || !isVerificationDate(item.priceVerifiedOn))) {
+    fail(`product ${item.id}: business price must be non-negative and include a verification date`);
+  }
+  for (const [value, verifiedOn, label] of [
+    [item.warranty, item.warrantyVerifiedOn, 'warranty'],
+    [item.stockStatus, item.stockVerifiedOn, 'stock'],
+    [item.datasheet, item.datasheetVerifiedOn, 'datasheet'],
+    [item.image, item.imageVerifiedOn, 'image'],
+    [item.specs, item.specsVerifiedOn, 'specifications'],
+  ]) {
+    if (value != null && !isVerificationDate(verifiedOn)) fail(`product ${item.id}: ${label} needs a valid verification date`);
+  }
 }
-if (PACKAGES.length !== 5) fail('expected 5 packages');
-for (const f of ['index.html', 'kontaktai.html']) {
-  const t = readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
-  if (!t.includes('info@tinangroup.com') && f === 'kontaktai.html') fail('email missing');
+
+for (const page of [
+  'index.html', 'moduliai.html', 'inverteriai.html', 'kaupikliai.html', 'konstrukcijos.html',
+  'elektros-medziagos.html', 'komplektai.html', 'kainorastis.html', 'paslaugos.html',
+  'apie.html', 'kontaktai.html', 'pasiulymas.html',
+]) {
+  if (!existsSync(new URL(`../${page}`, import.meta.url))) fail(`page missing: ${page}`);
 }
-process.exit(bad ? 1 : 0);
+for (const asset of ['public/CNAME', 'public/robots.txt', 'public/sitemap.xml']) {
+  if (!existsSync(new URL(`../${asset}`, import.meta.url))) fail(`SEO/hosting asset missing: ${asset}`);
+}
+
+if (errors) process.exitCode = 1;
+else console.log(`Catalogue and route checks passed (${CATALOGUE.length} verified products).`);

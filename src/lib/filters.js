@@ -1,17 +1,14 @@
 import { priceInfo } from './pricing.js';
 
-export const isCommercial = (i) => i.ratedKw >= 30;
+export const isCommercial = (item) => Number(item?.powerKw) >= 30;
 
-export function matches(i, f) {
-  const sell = priceInfo(i).sellingVat;
-  return (
-    (!f.manufacturer || i.manufacturer === f.manufacturer) &&
-    (!f.power || i.ratedKw === Number(f.power)) &&
-    (!f.phase || String(i.phase) === f.phase) &&
-    (!f.type || i.type === f.type) &&
-    (!f.segment || (f.segment === 'commercial' ? isCommercial(i) : !isCommercial(i))) &&
-    (!f.battery || (f.battery === 'yes' ? i.battery === true : i.battery === false)) &&
-    (!f.voltage || i.batteryVoltage === f.voltage) &&
-    (!f.maxPrice || (sell != null && sell <= Number(f.maxPrice)))
-  );
+export function matches(item, filters = {}) {
+  const price = priceInfo(item).sellingVat;
+  const text = [item.name, item.manufacturer, item.model].filter(Boolean).join(' ').toLocaleLowerCase('lt');
+  return (!filters.search || text.includes(filters.search.toLocaleLowerCase('lt')))
+    && (!filters.category || item.category === filters.category)
+    && (!filters.manufacturer || item.manufacturer === filters.manufacturer)
+    && (!filters.type || item.type === filters.type)
+    && (!filters.power || Number(item.powerKw) === Number(filters.power))
+    && (filters.maxPrice == null || (price !== null && price <= Number(filters.maxPrice)));
 }
