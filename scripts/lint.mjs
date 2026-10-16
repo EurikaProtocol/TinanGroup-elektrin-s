@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { CATALOGUE, CATEGORIES } from '../src/data/products.js';
+import { isVerificationDate } from '../src/lib/pricing.js';
 
 let errors = 0;
 const fail = (message) => { console.error(`LINT: ${message}`); errors += 1; };
@@ -13,10 +14,10 @@ for (const [index, item] of CATALOGUE.entries()) {
   for (const field of Object.keys(item)) {
     if (forbiddenFields.test(field)) fail(`product ${item.id}: internal field "${field}" is not allowed`);
   }
-  if (item.priceInclVat != null && (!Number.isFinite(item.priceInclVat) || item.priceInclVat < 0 || !item.priceVerifiedOn)) {
+  if (item.priceInclVat != null && (!Number.isFinite(item.priceInclVat) || item.priceInclVat < 0 || !isVerificationDate(item.priceVerifiedOn))) {
     fail(`product ${item.id}: customer price must be non-negative and include a verification date`);
   }
-  if (item.priceExVat != null && (!Number.isFinite(item.priceExVat) || item.priceExVat < 0 || !item.priceVerifiedOn)) {
+  if (item.priceExVat != null && (!Number.isFinite(item.priceExVat) || item.priceExVat < 0 || !isVerificationDate(item.priceVerifiedOn))) {
     fail(`product ${item.id}: business price must be non-negative and include a verification date`);
   }
   for (const [value, verifiedOn, label] of [
@@ -26,7 +27,7 @@ for (const [index, item] of CATALOGUE.entries()) {
     [item.image, item.imageVerifiedOn, 'image'],
     [item.specs, item.specsVerifiedOn, 'specifications'],
   ]) {
-    if (value != null && !verifiedOn) fail(`product ${item.id}: ${label} needs a verification date`);
+    if (value != null && !isVerificationDate(verifiedOn)) fail(`product ${item.id}: ${label} needs a valid verification date`);
   }
 }
 

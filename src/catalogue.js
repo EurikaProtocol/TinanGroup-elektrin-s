@@ -16,6 +16,7 @@ const safeUrl = (value) => {
     return '';
   }
 };
+const displayType = (value) => value === 'hybrid' ? 'Hibridinis' : value === 'grid' ? 'Tinklo inverteris' : value;
 
 const main = document.querySelector('[data-catalogue]');
 if (main) {
@@ -141,7 +142,7 @@ if (main) {
       <div class="table-wrap"><table><thead><tr><th>Informacija</th>${items.map((item) => `<th>${escapeHtml(item.name)}</th>`).join('')}</tr></thead>
       <tbody>${[['Gamintojas', (item) => item.manufacturer], ['Modelis', (item) => item.model],
         ['Kaina su PVM', (item) => formatEUR(priceInfo(item).sellingVat)],
-        ['Garantija', (item) => item.warranty], ['Tipas', (item) => item.type],
+        ['Garantija', (item) => item.warranty], ['Tipas', (item) => displayType(item.type)],
         ['Galia', (item) => item.powerKw ? `${item.powerKw} kW` : null]]
         .map(([label, value]) => `<tr><th scope="row">${label}</th>${items.map((item) => `<td>${escapeHtml(value(item) || 'Nepatvirtinta')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
     dialog.showModal();

@@ -10,11 +10,17 @@ export function formatEUR(value) {
   return Number.isFinite(value) ? formatter.format(value) : 'Kaina pagal užklausą';
 }
 
+export function isVerificationDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return false;
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value;
+}
+
 // Customer prices are imported as source values. Never derive a selling price from a cost.
 export function priceInfo(item) {
   const valid = Number.isFinite(item?.priceInclVat)
     && item.priceInclVat >= 0
-    && /^\d{4}-\d{2}-\d{2}$/.test(item.priceVerifiedOn || '');
+    && isVerificationDate(item.priceVerifiedOn);
   return {
     quoteOnly: !valid,
     sellingVat: valid ? item.priceInclVat : null,

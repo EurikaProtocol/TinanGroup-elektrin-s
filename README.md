@@ -1,41 +1,27 @@
-# TinanGroup-elektrin-s
-Oficiali TINAN GROUP svetainė – saulės elektrinės, inverteriai, baterijos, elektros įranga ir konkurencingi kainų pasiūlymai Lietuvos rinkai. Įrangos katalogas, produktų palyginimas ir individualių pasiūlymų užklausos.
+# TINAN GROUP
 
-## Technologijos
+Statinė lietuviška TINAN GROUP svetainė: Vite + vanilla JavaScript, be serverio dalies. Klientų užklausos paruošiamos el. pašto programoje; klientas turi pats išsiųsti laišką.
 
-Statinė svetainė: Vite (multi-page) + vanilla JS, be serverio dalies ir be AI API.
-Puslapiai: `/` (pradžia), `/inverteriai`, `/kaupikliai`, `/kontaktai` (užklausa + kainos skaičiuoklė).
+## Paleidimas ir patikra
 
-```
-npm install
-npm run dev     # kūrimas
-npm run lint    # duomenų nuoseklumo patikra
-npm test        # vienetiniai testai (kainos, validacija, filtrai)
-npm run build   # produkcinis build į dist/
+```sh
+npm ci
+npm run dev
+npm run lint
+npm test
+npm run build
 ```
 
-## Duomenys ir kainos
+Sukurti HTML puslapiai apima pradžią, produktų kategorijas, kainoraštį, paslaugas, informaciją apie įmonę, kontaktus ir individualaus pasiūlymo užklausą. GitHub Pages įvesties puslapiai apibrėžti `vite.config.js`; domeno failas yra `public/CNAME`.
 
-- Visi produktai: `src/data/products.js`; PVM, antkainis, skaičiuoklės prielaidos: `src/config.js`.
-- Kaina klientui rodoma tik jei nurodyta `supplierPrice` **ir** `priceVerifiedOn` (patikrinimo data, YYYY-MM-DD); kitaip rodoma „Kaina pagal užklausą“.
-  Pardavimo kaina = pirkimo × (1 + `markup`) + PVM. Tiekėjo pirkimo kaina viešai nerodoma.
-- `null` specifikacijos laukas rodomas kaip „Nepatvirtinta“. Duomenų lapo nuorodą (`datasheet`) įrašykite tik patikrinę oficialiame gamintojo šaltinyje;
-  kol jos nėra, rodoma nuoroda į gamintojo svetainę.
-- Šiuo metu **jokia kaina nepatikrinta**, nė vienas duomenų lapas nesusietas, garantijos neįrašytos. Modelių sąrašas ir techniniai laukai surašyti be internetinio patikrinimo
-  (SAJ ir SolarEdge modelių kodai bei dalis laukų – ypač neužtikrinti) ir **prieš publikuojant būtina patikrinti** pagal oficialius duomenų lapus.
+## Produktų katalogas ir kainos
 
-## Užklausų formos
+Viešas, redaguojamas katalogas yra `src/data/products.js`. Į jį galima įtraukti tik kliento informacijai patvirtintus laukus: produkto ID, pavadinimą, kategoriją, gamintoją, modelį, kliento kainą su PVM (`priceInclVat`), kainą be PVM (`priceExVat`) ir kainos patikrinimo datą (`priceVerifiedOn`). Kaina pateikiama kaip tiesioginė šaltinio reikšmė, be perskaičiavimo. Nepatvirtinta arba neturinti datos kaina svetainėje rodoma kaip „Kaina pagal užklausą“.
 
-Svetainė neturi el. pašto siuntimo backend'o. Forma validuojama, sugeneruoja užklausos santrauką (su pasirinktais produktais ir kiekiais, sąrašas saugomas tik naršyklės localStorage) ir `mailto:` nuorodą
-(info@tinangroup.com). Svetainė aiškiai nurodo, kad užklausa automatiškai nesiunčiama.
+Specifikacijos, garantija, likutis, produkto vaizdas ir duomenų lapas rodomi tik kartu su atitinkamu patikrinimo datos lauku. Likutį galima rodyti tik tada, kai `stockCurrent` aiškiai nustatytas į `true`. Kataloge negali būti tiekėjo kainų, savikainos, pelno ar vidinės finansinės analizės. Originalaus kliento kainoraščio ar vidinių skaičiuoklių nedėkite į `public/`.
 
-## GitHub Pages diegimas
+**Katalogo duomenys dar neimportuoti:** užduotyje nurodytas `Tinan_Group_KLIENTU_KAINORASTIS_2026.xlsx` šiame darbo aplanke nebuvo pateiktas, todėl `CATALOGUE` kol kas tuščias. Kainoms ir produktų duomenims paskelbti reikia pateikti šaltinio failą, peržiūrėti tik klientams skirtus lapus ir patikrinti kiekvieną įrašą. Originalus TINAN GROUP logotipas taip pat nebuvo rastas šiame repozitorijoje; šiuo metu naudojamas tekstinis pavadinimas.
 
-1. Repository → Settings → Pages → Source: **GitHub Actions**.
-2. Push į `main` paleidžia `.github/workflows/pages.yml` (lint, testai, build, deploy).
-3. Domenas: `public/CNAME` nurodo `tinangroup.com`; DNS turi būti nukreiptas į GitHub Pages. Jei domenas nenaudojamas, pašalinkite CNAME – nuorodos reliatyvios ir veiks ir po `/repo/`.
+## Hostingas
 
-Apribojimai: nėra serverio (nei formų siuntimo, nei duomenų bazės); `/inverteriai` be `.html` veikia Pages aplinkoje, o lokaliai naudokite `inverteriai.html`.
-404 puslapis naudoja šakninius (`/`) kelius, nes GitHub Pages jį pateikia bet kuriame gylyje; kiti puslapiai – reliatyvūs.
-Hero paveikslas yra SVG iliustracija – tikrą saulėlydžio nuotrauką (optimizuotą, su `alt`) reikia pridėti atskirai.
-Sitemap/canonical naudoja `https://tinangroup.com`. TINAN AI agentas sąmoningai nepridėtas.
+GitHub Pages publikavimui įgalinkite „GitHub Actions“ kaip Pages šaltinį. Svetainė neturi backend, automatinio laiškų siuntimo, duomenų bazės ar AI API. `https://tinangroup.com` naudojamas canonical URL, sitemap ir CNAME; DNS ir domeno nustatymai nekeičiami projekte.

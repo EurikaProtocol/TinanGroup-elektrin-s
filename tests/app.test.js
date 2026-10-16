@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatEUR, priceInfo } from '../src/lib/pricing.js';
+import { formatEUR, priceInfo, isVerificationDate } from '../src/lib/pricing.js';
 import { validateQuote, buildSummary, mailtoLink } from '../src/lib/validate.js';
 import { matches } from '../src/lib/filters.js';
 import { CATALOGUE, CATEGORIES, findItem } from '../src/data/products.js';
@@ -16,6 +16,7 @@ describe('customer catalogue prices', () => {
     });
     expect(priceInfo({ ...product, priceVerifiedOn: null }).quoteOnly).toBe(true);
     expect(priceInfo({ ...product, priceInclVat: -1 }).quoteOnly).toBe(true);
+    expect(isVerificationDate('2026-02-30')).toBe(false);
   });
 
   it('shows quote-only text when a price is absent and preserves cents', () => {

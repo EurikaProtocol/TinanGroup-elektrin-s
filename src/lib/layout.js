@@ -8,6 +8,7 @@ const NAV = [
   ['kainorastis.html', 'Kainoraštis'],
   ['paslaugos.html', 'Paslaugos ir montavimas'],
   ['apie.html', 'Apie mus'],
+  ['pasiulymas.html', 'Individualus pasiūlymas'],
   ['kontaktai.html', 'Kontaktai'],
 ];
 
