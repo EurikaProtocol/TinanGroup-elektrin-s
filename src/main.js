@@ -14,15 +14,15 @@ if (grid) {
     return `<article class="card package${p.badge === 'Populiariausias' ? ' featured' : ''}">
       ${p.badge ? `<span class="badge">${p.badge}</span>` : ''}
       <h3>${p.name}</h3>
-      <p class="price">${info.quoteOnly ? 'Pagal užklausą' : formatEUR(info.sellingVat)}</p>
-      <p class="vat">${info.quoteOnly ? 'Kaina skaičiuojama individualiai' : `Kaina su ${Math.round(VAT_RATE * 100)}% PVM (be PVM ${formatEUR(info.selling)})`}</p>
-      ${p.priceStatus === 'demo' ? '<p class="demo-tag">DEMO kaina</p>' : ''}
+      <p class="price">${info.quoteOnly ? 'Kaina pagal užklausą' : formatEUR(info.sellingVat)}</p>
+      <p class="vat">${info.quoteOnly ? 'Kaina skaičiuojama individualiai' : `Kaina su ${Math.round(VAT_RATE * 100)}% PVM, patikrinta ${info.verifiedOn}`}</p>
+      
       <details><summary>Įranga ir paslaugos</summary>
         <h4>Įranga</h4><ul>${p.equipment.map((e) => `<li>${e}</li>`).join('')}</ul>
         <p><strong>Kaupiklis:</strong> ${p.battery}</p>
         <h4>Paslaugos</h4><ul>${p.services.map((e) => `<li>${e}</li>`).join('')}</ul>
       </details>
-      <a class="btn btn-primary" href="kontaktai.html?product=${encodeURIComponent(p.name)}&kw=${p.kw}#pasiulymas">Gauti pasiūlymą</a>
+      <a class="btn btn-primary" href="kontaktai.html?add=${p.id}&kw=${p.kw}#pasiulymas">Gauti pasiūlymą</a>
     </article>`;
   }).join('');
 }

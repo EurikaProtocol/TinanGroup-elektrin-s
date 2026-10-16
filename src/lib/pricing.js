@@ -12,19 +12,19 @@ export function withVat(priceExVat, vat = VAT_RATE) {
 
 /** Returns {supplier, selling, sellingVat} or null prices for quote-only items. */
 export function priceInfo(item) {
-  if (!item || item.quoteOnly || item.supplierPrice == null) {
-    return { supplier: null, selling: null, sellingVat: null, quoteOnly: true };
+  if (!item || item.quoteOnly || item.supplierPrice == null || !item.priceVerifiedOn) {
+    return { supplier: null, selling: null, sellingVat: null, quoteOnly: true, verifiedOn: null };
   }
   const selling = sellingPrice(item.supplierPrice, item.markup);
-  return { supplier: item.supplierPrice, selling, sellingVat: withVat(selling), quoteOnly: false };
+  return { supplier: item.supplierPrice, selling, sellingVat: withVat(selling), quoteOnly: false, verifiedOn: item.priceVerifiedOn };
 }
 
 const fmt = new Intl.NumberFormat('lt-LT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 export function formatEUR(v) {
-  return v == null ? 'Pagal užklausą' : fmt.format(v);
+  return v == null ? 'Kaina pagal užklausą' : fmt.format(v);
 }
 
-/** Indicative estimate. All inputs from ESTIMATOR_PRICES (demo, editable). */
+/** Indicative estimate. All inputs from ESTIMATOR_PRICES (editable, unverified). */
 export function estimate({ kw, batteryKwh = 0, hybrid = false }, p) {
   const k = Number(kw) || 0;
   const b = Number(batteryKwh) || 0;

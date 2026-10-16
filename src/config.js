@@ -12,9 +12,11 @@ export const VAT_RATE = 0.21;
 // Default markup applied on supplier purchase price when a product has no own markup.
 export const DEFAULT_MARKUP = 0.2;
 export const PRICE_NOTICE =
-  'DEMO kainos – pavyzdinės, dar nepatikrintos pagal tiekėjų kainas. Galutinė kaina nurodoma tik pasiūlyme.';
+  'Kaina rodoma tik patikrinus ją pas tiekėją (nurodoma patikrinimo data). Kitais atvejais – „Kaina pagal užklausą“.';
+export const SPEC_NOTICE =
+  'Techniniai duomenys pateikiami informaciniais tikslais. Prieš užsakant jie tikrinami pagal oficialų gamintojo duomenų lapą; nepatvirtinti laukai pažymėti „Nepatvirtinta“.';
 
-// Demo supplier purchase prices per unit (EUR, excl. VAT) used by the estimator.
+// Skaičiuoklės prielaidos (EUR be PVM, redaguojamos). Tai NEPATVIRTINTOS tiekėjų kainos – tik orientaciniam įverčiui.
 export const ESTIMATOR_PRICES = {
   modulesPerKw: 230,
   inverterPerKw: 160,

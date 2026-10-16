@@ -15,6 +15,8 @@ export function validateQuote(d) {
   if (d.consumption !== undefined && d.consumption !== '' && !(Number(d.consumption) > 0))
     e.consumption = 'Metinis suvartojimas turi būti teigiamas skaičius.';
   if (d.kw !== undefined && d.kw !== '' && !(Number(d.kw) > 0)) e.kw = 'Galia turi būti teigiamas skaičius.';
+  if (Array.isArray(d.items) && !d.items.length) e.items = 'Įtraukite bent vieną produktą į užklausos sąrašą arba aprašykite poreikį žinutėje.';
+  if (Array.isArray(d.items) && !d.items.length && String(d.message || '').trim().length >= 10) delete e.items;
   if (!d.consent) e.consent = 'Reikalingas sutikimas.';
   return e;
 }
@@ -30,8 +32,8 @@ export function buildSummary(d, est) {
     d.consumption ? `Metinis suvartojimas: ${d.consumption} kWh` : null,
     d.kw ? `Norima galia: ${d.kw} kW` : null,
     d.battery ? `Kaupiklis: ${d.battery}` : null,
-    d.product ? `Dominanti įranga: ${d.product}` : null,
-    est ? `Orientacinis įvertis: ${est.low}–${est.high} € su PVM (DEMO kainos)` : null,
+    Array.isArray(d.items) && d.items.length ? `Pageidaujami produktai:\n${d.items.map((i) => `  - ${i.name} × ${i.qty}`).join('\n')}` : null,
+    est ? `Orientacinis įvertis: ${est.low}–${est.high} € su PVM (orientacinė skaičiuoklės prielaida, ne tiekėjo kaina)` : null,
     d.message ? `Žinutė: ${d.message}` : null,
   ];
   return lines.filter(Boolean).join('\n');

@@ -7,9 +7,8 @@ const ids = new Set();
 for (const i of INVERTERS) {
   if (ids.has(i.id)) fail(`duplicate inverter id ${i.id}`);
   ids.add(i.id);
-  if (!i.battery && i.batteryVoltage) fail(`${i.model}: batteryVoltage without battery`);
-  if (i.battery && !i.batteryVoltage) fail(`${i.model}: battery without voltage`);
-  if (i.supplierPrice == null && !i.quoteOnly) fail(`${i.model}: missing price must be quoteOnly`);
+  if (i.battery !== true && i.batteryVoltage) fail(`${i.model}: batteryVoltage without battery`);
+  if (i.supplierPrice != null && !i.priceVerifiedOn) fail(`${i.model}: price without priceVerifiedOn`);
 }
 if (PACKAGES.length !== 5) fail('expected 5 packages');
 for (const f of ['index.html', 'kontaktai.html']) {

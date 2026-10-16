@@ -39,7 +39,7 @@ h1,h2,h3{line-height:1.15}h2{font-size:clamp(1.5rem,3vw,2rem)}
 .package .btn{margin-top:auto}.package.featured{box-shadow:0 8px 28px rgba(242,140,0,.35)}
 .package h3{margin:0}.badge{position:absolute;top:-12px;right:12px;background:var(--orange);color:#fff;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:99px}
 .price{font-size:1.7rem;font-weight:800;margin:4px 0 0;color:var(--black)}.vat{margin:0;font-size:.85rem;color:#555}
-.demo-tag{display:inline-block;align-self:flex-start;background:#fff3e0;color:#9a5600;border:1px solid var(--orange);border-radius:6px;padding:1px 8px;font-size:.75rem;font-weight:700;margin:0}
+.cart-link{font-weight:600}.demo-tag{display:inline-block;align-self:flex-start;background:#fff3e0;color:#9a5600;border:1px solid var(--orange);border-radius:6px;padding:1px 8px;font-size:.75rem;font-weight:700;margin:0}
 details{font-size:.92rem}summary{cursor:pointer;color:var(--orange);font-weight:600}details ul{padding-left:18px;margin:4px 0}details h4{margin:8px 0 2px}
 .notice{border-radius:10px;padding:12px 16px}.notice.warn{background:#fff3e0;border:1px solid var(--orange)}.notice.ok{background:#f0f9f0;border:1px solid #6bb36b}
 .muted{color:#666;font-size:.9rem}.error,.err{color:#b00020;font-size:.85rem}.err{display:block;min-height:0}
@@ -74,3 +74,14 @@ textarea[readonly]{margin-top:8px}
   .main-nav.open{display:flex}
   .two-col{grid-template-columns:1fr}
 }
+
+.dialog{border:2px solid var(--orange);border-radius:var(--radius);max-width:min(900px,94vw);max-height:90vh;overflow:auto;padding:20px}
+.dialog::backdrop{background:rgba(0,0,0,.6)}.dialog-close{float:right}
+.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{border:1px solid #ddd;padding:6px 8px;text-align:left;vertical-align:top}thead th{background:var(--gray)}
+.quote-list{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.quote-list li{display:flex;gap:8px;align-items:center;justify-content:space-between;border:1px solid #e8e8e8;border-radius:8px;padding:8px}
+.quote-list input{width:80px}.contact-box{background:var(--charcoal);color:#fff;border-radius:var(--radius);padding:16px}.contact-box a{color:var(--orange);font-weight:700}
+input,select,textarea{font-size:16px}
+.header-inner{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+.site-footer{padding-bottom:env(safe-area-inset-bottom)}
+.sr{font-weight:400}

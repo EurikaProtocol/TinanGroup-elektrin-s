@@ -10,7 +10,7 @@ export function formData(form) {
 }
 
 /** Validates, shows per-field errors and an honest "not sent" enquiry summary with mailto link. */
-export function bindQuoteForm(form, { getEstimate } = {}) {
+export function bindQuoteForm(form, { getEstimate, getItems } = {}) {
   const out = form.querySelector('[data-result]');
   form.setAttribute('novalidate', '');
   form.addEventListener('submit', (ev) => {
@@ -18,6 +18,7 @@ export function bindQuoteForm(form, { getEstimate } = {}) {
     form.querySelectorAll('[data-error]').forEach((n) => (n.textContent = ''));
     form.querySelectorAll('[aria-invalid]').forEach((n) => n.removeAttribute('aria-invalid'));
     const d = formData(form);
+    if (getItems) d.items = getItems();
     const errors = validateQuote(d);
     const keys = Object.keys(errors);
     keys.forEach((k) => {
