@@ -34,6 +34,12 @@ if (main) {
     manufacturerSelect.innerHTML = '<option value="">Visi gamintojai</option>'
       + names.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
   }
+  const powerSelect = document.querySelector('#f-power');
+  if (powerSelect) {
+    const powers = [...new Set(products.map((item) => item.powerKw).filter(Number.isFinite))].sort((a, b) => a - b);
+    powerSelect.innerHTML = '<option value="">Visos</option>'
+      + powers.map((power) => `<option value="${power}">${power} kW</option>`).join('');
+  }
   const categorySelect = document.querySelector('#f-category');
   if (categorySelect) {
     categorySelect.innerHTML = '<option value="">Visos kategorijos</option>'
@@ -73,20 +79,22 @@ if (main) {
     document.querySelector('#result-count').textContent = `Rasta produktų: ${visible.length}`;
     grid.innerHTML = visible.length ? visible.map((item) => {
       const price = priceInfo(item);
-      const img = safeUrl(item.image);
-      const details = Object.entries(item.specs || {}).filter(([, value]) => value !== null && value !== '')
-        .map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd>`).join('');
-      const sheet = safeUrl(item.datasheet);
+      const img = item.imageVerifiedOn ? safeUrl(item.image) : '';
+      const details = item.specsVerifiedOn
+        ? Object.entries(item.specs || {}).filter(([, value]) => value !== null && value !== '')
+          .map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd>`).join('')
+        : '';
+      const sheet = item.datasheetVerifiedOn ? safeUrl(item.datasheet) : '';
       return `<article class="product-card">
         ${img ? `<img class="product-image" src="${escapeHtml(img)}" alt="${escapeHtml(item.imageAlt || item.name)}" loading="lazy">` : '<div class="product-image product-image-placeholder" aria-hidden="true"><span>TINAN GROUP</span></div>'}
         <div class="product-content">
           <p class="eyebrow">${escapeHtml(CATEGORIES.find((entry) => entry.id === item.category)?.name || title)}</p>
           <h2>${escapeHtml(item.name)}</h2>
           <p class="product-model">${escapeHtml([item.manufacturer, item.model].filter(Boolean).join(' · ') || 'Modelis pagal užklausą')}</p>
-          <p class="product-price">${price.quoteOnly ? 'Kaina pagal užklausą' : formatEUR(price.sellingVat)}</p>
+          <p class="product-price">${price.quoteOnly ? 'Kaina pagal užklausą' : `${formatEUR(price.sellingVat)} <span>su PVM</span>`}</p>
           ${price.sellingExVat !== null ? `<p class="muted">Be PVM: ${formatEUR(price.sellingExVat)}</p>` : ''}
-          ${item.warranty ? `<p>Garantija: ${escapeHtml(item.warranty)}</p>` : ''}
-          ${item.stock ? `<p>${escapeHtml(item.stock)}</p>` : ''}
+          ${item.warranty && item.warrantyVerifiedOn ? `<p>Garantija: ${escapeHtml(item.warranty)}</p>` : ''}
+          ${item.stockStatus && item.stockVerifiedOn && item.stockCurrent === true ? `<p>${escapeHtml(item.stockStatus)} <span class="muted">(tikrinta ${escapeHtml(item.stockVerifiedOn)})</span></p>` : ''}
           ${details ? `<details><summary>Techninė informacija</summary><dl>${details}</dl></details>` : ''}
           ${sheet ? `<a href="${escapeHtml(sheet)}" target="_blank" rel="noopener noreferrer">Duomenų lapas</a>` : ''}
           ${price.verifiedOn ? `<p class="muted">Kaina tikrinta: ${escapeHtml(price.verifiedOn)}</p>` : ''}
@@ -96,7 +104,9 @@ if (main) {
           </div>
         </div>
       </article>`;
-    }).join('') : `<div class="empty-state"><span class="eyebrow">TINAN GROUP · ${escapeHtml(title)}</span>
+    }).join('') : products.length ? `<div class="empty-state"><span class="eyebrow">PAIEŠKA</span>
+      <h2>Pagal pasirinktus kriterijus produktų nerasta</h2><p>Pakeiskite filtrus arba juos išvalykite.</p>
+      <button class="btn btn-outline" type="reset" form="filters">Išvalyti filtrus</button></div>` : `<div class="empty-state"><span class="eyebrow">TINAN GROUP · ${escapeHtml(title)}</span>
       <h2>Šiuo metu kainoraščio duomenys nepasiekiami</h2>
       <p>Konkrečių prekių, kainų, likučių ir garantijų nenurodome, kol jų nepatvirtiname pagal klientų kainoraštį. Dėl individualaus pasiūlymo susisiekite su mumis.</p>
       <a class="btn btn-primary" href="kontaktai.html#pasiulymas">Pateikti užklausą</a></div>`;

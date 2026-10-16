@@ -32,8 +32,8 @@ export function buildSummary(d, est) {
     d.consumption ? `Metinis suvartojimas: ${d.consumption} kWh` : null,
     d.kw ? `Norima galia: ${d.kw} kW` : null,
     d.battery ? `Kaupiklis: ${d.battery}` : null,
-    Array.isArray(d.items) && d.items.length ? `Pageidaujami produktai:\n${d.items.map((i) => `  - ${i.name} × ${i.qty}`).join('\n')}` : null,
-    est ? `Orientacinis įvertis: ${est.low}–${est.high} € su PVM (orientacinė skaičiuoklės prielaida, ne tiekėjo kaina)` : null,
+    d.installation ? `Montavimas: ${d.installation}` : null,
+    Array.isArray(d.items) && d.items.length ? `Pageidaujami produktai:\n${d.items.map((i) => `  - ${i.name} × ${i.qty}${Number.isFinite(i.priceInclVat) ? ` (${i.priceInclVat} € / vnt. su PVM)` : ' (kaina pagal užklausą)'}`).join('\n')}` : null,
     d.message ? `Žinutė: ${d.message}` : null,
   ];
   return lines.filter(Boolean).join('\n');

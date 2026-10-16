@@ -1,6 +1,7 @@
 // Approved, customer-facing catalogue data only.
-// Add products here from the customer price list; never add supplier costs or internal analysis.
-// Selling prices are copied from the source and are not recalculated.
+// Add only approved customer-facing fields from the customer price list.
+// Price, warranty, stock, specifications, images and datasheets are shown only with verification dates.
+// Never add supplier costs or internal analysis.
 export const CATALOGUE = [];
 
 export const CATEGORIES = [
