@@ -100,6 +100,7 @@ textarea { resize: vertical; }
 .product-content h2 { margin-bottom: 8px; font-size: 1.2rem; }
 .product-model { min-height: 25px; color: var(--muted); font-size: .9rem; }
 .product-price { margin: 10px 0 0; font-size: 1.3rem; font-weight: 800; }
+.product-price span { color: var(--muted); font-size: .72rem; font-weight: 650; }
 .product-content details { width: 100%; margin-block: 10px; }
 .product-content summary { color: var(--orange-dark); cursor: pointer; font-weight: 700; }
 dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 10px 0; font-size: .88rem; }

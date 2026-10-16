@@ -60,7 +60,8 @@ if (main) {
       category: categorySelect?.value || '',
       type: document.querySelector('#f-type')?.value || '',
       power: document.querySelector('#f-power')?.value || '',
-      maxPrice: Number(document.querySelector('#f-price')?.value) || 0,
+      maxPrice: document.querySelector('#f-price')?.value === ''
+        ? null : Number(document.querySelector('#f-price')?.value),
       sort: document.querySelector('#f-sort')?.value || 'name',
     };
     let visible = products.filter((item) => {
@@ -71,7 +72,7 @@ if (main) {
         && (!filters.category || item.category === filters.category)
         && (!filters.type || item.type === filters.type)
         && (!filters.power || Number(item.powerKw) === Number(filters.power))
-        && (!filters.maxPrice || (p !== null && p <= filters.maxPrice));
+        && (filters.maxPrice === null || (p !== null && p <= filters.maxPrice));
     });
     visible.sort((a, b) => filters.sort === 'price'
       ? (priceInfo(a).sellingVat ?? Infinity) - (priceInfo(b).sellingVat ?? Infinity)

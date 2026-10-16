@@ -28,21 +28,25 @@ const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => 
 function renderList() {
   const items = getCart();
   let knownTotal = 0;
+  let knownCount = 0;
   let hasUnknown = false;
   list.innerHTML = items.length ? items.map((entry) => {
     const item = findItem(entry.id);
     const unit = item ? priceInfo(item).sellingVat : null;
     if (unit === null) hasUnknown = true;
-    else knownTotal += unit * entry.qty;
+    else {
+      knownTotal += unit * entry.qty;
+      knownCount += 1;
+    }
     return `<li><span>${escapeHtml(entry.name)}</span><span class="quote-controls">
       <label class="sr">Kiekis<input type="number" min="1" max="999" value="${entry.qty}" data-qty="${escapeHtml(entry.id)}"></label>
       <span>${unit === null ? 'Kaina pagal užklausą' : formatEUR(unit * entry.qty)}</span>
       <button type="button" class="btn btn-outline" data-remove="${escapeHtml(entry.id)}" aria-label="Pašalinti ${escapeHtml(entry.name)}">Pašalinti</button></span></li>`;
   }).join('') : '<li>Sąrašas tuščias.</li>';
   const total = document.querySelector('#quote-total');
-  total.textContent = items.length
-    ? `${hasUnknown ? 'Patvirtintų kainų suma' : 'Orientacinė suma'}: ${formatEUR(knownTotal)}${hasUnknown ? ' · dalies prekių kaina pagal užklausą' : ''}`
-    : '';
+  total.textContent = !items.length ? ''
+    : hasUnknown && !knownCount ? 'Kaina pagal užklausą'
+      : `${hasUnknown ? 'Žinomų kainų suma' : 'Orientacinė suma'}: ${formatEUR(knownTotal)}${hasUnknown ? ' · dalies prekių kaina pagal užklausą' : ''}`;
 }
 list.addEventListener('change', (event) => {
   if (event.target.dataset.qty) setQty(event.target.dataset.qty, event.target.value);

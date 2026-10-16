@@ -4,6 +4,7 @@ import { validateQuote, buildSummary, mailtoLink } from '../src/lib/validate.js'
 import { matches } from '../src/lib/filters.js';
 import { CATALOGUE, CATEGORIES, findItem } from '../src/data/products.js';
 import { readFileSync, existsSync } from 'node:fs';
+import { addToCart, getCart, cartCount, setQty, removeFromCart, clearCart } from '../src/lib/cart.js';
 
 describe('customer catalogue prices', () => {
   it('uses exact approved selling prices and requires a verification date', () => {
@@ -61,6 +62,27 @@ describe('quote validation and email fallback', () => {
     const summary = buildSummary({ ...data, items: [{ name: 'Modulis', qty: 2, priceInclVat: 100 }] });
     expect(summary).toContain('Modulis × 2 (100 € / vnt. su PVM)');
     expect(mailtoLink(summary)).toContain('mailto:info@tinangroup.com');
+  });
+});
+
+describe('quote list', () => {
+  it('adds products, updates quantities and removes items', () => {
+    const storage = new Map();
+    globalThis.localStorage = {
+      getItem: (key) => storage.get(key) ?? null,
+      setItem: (key, value) => storage.set(key, value),
+    };
+    globalThis.window = { dispatchEvent: () => true };
+    clearCart();
+    addToCart('module-1', 'Modulis');
+    addToCart('module-1', 'Modulis');
+    expect(cartCount()).toBe(2);
+    setQty('module-1', 3);
+    expect(getCart()[0].qty).toBe(3);
+    removeFromCart('module-1');
+    expect(getCart()).toEqual([]);
+    delete globalThis.localStorage;
+    delete globalThis.window;
   });
 });
 

@@ -10,5 +10,5 @@ export function matches(item, filters = {}) {
     && (!filters.manufacturer || item.manufacturer === filters.manufacturer)
     && (!filters.type || item.type === filters.type)
     && (!filters.power || Number(item.powerKw) === Number(filters.power))
-    && (!filters.maxPrice || (price !== null && price <= Number(filters.maxPrice)));
+    && (filters.maxPrice == null || (price !== null && price <= Number(filters.maxPrice)));
 }
