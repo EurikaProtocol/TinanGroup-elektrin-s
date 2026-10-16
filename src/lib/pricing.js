@@ -1,50 +1,25 @@
-import { VAT_RATE, DEFAULT_MARKUP } from '../config.js';
+import { VAT_RATE } from '../config.js';
 
-export function sellingPrice(supplierPrice, markup = DEFAULT_MARKUP) {
-  if (supplierPrice == null || Number.isNaN(Number(supplierPrice))) return null;
-  return Math.round(Number(supplierPrice) * (1 + markup) * 100) / 100;
+const formatter = new Intl.NumberFormat('lt-LT', {
+  style: 'currency',
+  currency: 'EUR',
+  maximumFractionDigits: 2,
+});
+
+export function formatEUR(value) {
+  return Number.isFinite(value) ? formatter.format(value) : 'Kaina pagal užklausą';
 }
 
-export function withVat(priceExVat, vat = VAT_RATE) {
-  if (priceExVat == null) return null;
-  return Math.round(priceExVat * (1 + vat) * 100) / 100;
-}
-
-/** Returns {supplier, selling, sellingVat} or null prices for quote-only items. */
+// Customer prices are imported as source values. Never derive a selling price from a cost.
 export function priceInfo(item) {
-  if (!item || item.quoteOnly || item.supplierPrice == null || !item.priceVerifiedOn) {
-    return { supplier: null, selling: null, sellingVat: null, quoteOnly: true, verifiedOn: null };
-  }
-  const selling = sellingPrice(item.supplierPrice, item.markup);
-  return { supplier: item.supplierPrice, selling, sellingVat: withVat(selling), quoteOnly: false, verifiedOn: item.priceVerifiedOn };
-}
-
-const fmt = new Intl.NumberFormat('lt-LT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
-export function formatEUR(v) {
-  return v == null ? 'Kaina pagal užklausą' : fmt.format(v);
-}
-
-/** Indicative estimate. All inputs from ESTIMATOR_PRICES (editable, unverified). */
-export function estimate({ kw, batteryKwh = 0, hybrid = false }, p) {
-  const k = Number(kw) || 0;
-  const b = Number(batteryKwh) || 0;
-  const inverterPerKw = p.inverterPerKw + (hybrid || b > 0 ? p.hybridInverterExtraPerKw : 0);
-  const supplier =
-    k * (p.modulesPerKw + inverterPerKw + p.mountingPerKw + p.cablesPerKw + p.installationPerKw) +
-    (k > 0 ? p.protectionFlat : 0) +
-    b * p.batteryPerKwh;
-  const exVat = Math.round(supplier * (1 + p.markup));
-  const incVat = Math.round(withVat(exVat));
+  const valid = Number.isFinite(item?.priceInclVat)
+    && item.priceInclVat >= 0
+    && /^\d{4}-\d{2}-\d{2}$/.test(item.priceVerifiedOn || '');
   return {
-    exVat,
-    incVat,
-    low: Math.round(incVat * 0.9),
-    high: Math.round(incVat * 1.15),
-    yearlyKwh: Math.round(k * p.yieldPerKwp),
+    quoteOnly: !valid,
+    sellingVat: valid ? item.priceInclVat : null,
+    sellingExVat: valid && Number.isFinite(item.priceExVat) ? item.priceExVat : null,
+    verifiedOn: valid ? item.priceVerifiedOn : null,
+    vatRate: VAT_RATE,
   };
-}
-
-export function recommendKw(annualKwh, p) {
-  const kwh = Number(annualKwh) || 0;
-  return Math.max(0, Math.round((kwh / p.yieldPerKwp) * 2) / 2);
 }
